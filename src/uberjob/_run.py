@@ -49,17 +49,17 @@ def _update_run_totals(plan: Plan, progress_observer: ProgressObserver) -> None:
 def _coerce_progress(progress: None | bool | Progress | Iterable[Progress]) -> Progress:
     if not progress:
         return null_progress
+    if progress is True:
+        return default_progress
+    if isinstance(progress, Progress):
+        return progress
+    if type(progress) is tuple:
+        return composite_progress(*progress)
     try:
         progress = tuple(progress)
     except TypeError:
-        pass
-    if type(progress) is tuple:
-        return composite_progress(*progress)
-    if progress is True:
-        return default_progress
-    if not isinstance(progress, Progress):
         raise TypeError("The 'progress' parameter failed to coerce to a Progress.")
-    return progress
+    return composite_progress(*progress)
 
 
 def _coerce_retry(
