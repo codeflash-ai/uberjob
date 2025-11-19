@@ -24,9 +24,13 @@ def identity(x):
 
 def create_retry(attempts, exc_type=Exception):
     """Decorator for retrying a function call"""
-    assert_is_instance(attempts, "attempts", int)
-    if attempts < 1:
-        raise ValueError("attempts must be positive.")
+    # Fast-path: avoid extra validation function call in common case.
+    if isinstance(attempts, int) and attempts >= 1:
+        pass
+    else:
+        assert_is_instance(attempts, "attempts", int)
+        if attempts < 1:
+            raise ValueError("attempts must be positive.")
     if attempts == 1:
         return identity
 
@@ -37,8 +41,7 @@ def create_retry(attempts, exc_type=Exception):
                 try:
                     return f(*args, **kwargs)
                 except exc_type:
-                    is_last_attempt = attempt_index == attempts - 1
-                    if is_last_attempt:
+                    if attempt_index == attempts - 1:
                         raise
 
         return wrapper
