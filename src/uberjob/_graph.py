@@ -18,7 +18,7 @@ from uberjob.graph import Call
 
 
 def get_full_call_scope(call: Call) -> tuple:
-    return (*call.scope, fully_qualified_name(call.fn))
+    return call.scope + (fully_qualified_name(call.fn),)
 
 
 __all__ = ["get_full_call_scope"]
