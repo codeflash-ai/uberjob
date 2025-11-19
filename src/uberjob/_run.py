@@ -26,7 +26,7 @@ from uberjob._registry import Registry
 from uberjob._transformations import get_mutable_plan
 from uberjob._transformations.caching import plan_with_value_stores
 from uberjob._transformations.pruning import prune_plan
-from uberjob._util.retry import create_retry
+from uberjob._util.retry import identity, create_retry
 from uberjob._util.validation import assert_is_callable, assert_is_instance
 from uberjob.graph import Call, Node
 from uberjob.progress import (
@@ -67,7 +67,9 @@ def _coerce_retry(
 ) -> Callable[[Callable], Callable]:
     if callable(retry):
         return retry
-    return create_retry(1 if retry is None else retry)
+    if retry is None or retry == 1:
+        return identity
+    return create_retry(retry)
 
 
 def run(
