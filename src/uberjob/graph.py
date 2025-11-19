@@ -112,7 +112,7 @@ class PositionalArg(Dependency):
         return repr_helper(self, self.index)
 
     def __hash__(self):
-        return hash(self.index)
+        return self.index
 
     def __eq__(self, other):
         return type(other) is PositionalArg and self.index == other.index
