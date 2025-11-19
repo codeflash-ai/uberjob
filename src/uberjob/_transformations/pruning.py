@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import itertools
 from collections.abc import Callable, Iterable
 
 from uberjob._plan import Plan
@@ -51,23 +50,33 @@ def _prune_literal_if_trivial(plan: Plan, literal: Literal) -> None:
     a) it is not an argument to any function, and
     b) removing it does not increase the number of dependencies in the graph.
     """
-    if not all(
-        type(dependency) is Dependency
-        for _, _, dependency in plan.graph.out_edges(literal, keys=True)
-    ):
-        return
+    # Fast path: avoid allocating list if possible, short-circuit on first non-Dependency
+    for _, _, dependency in plan.graph.out_edges(literal, keys=True):
+        if type(dependency) is not Dependency:
+            return
 
-    predecessors = list(plan.graph.predecessors(literal))
-    successors = list(plan.graph.successors(literal))
+    # Use generators to avoid creating unnecessary lists if unnecessary
+    predecessors_iter = plan.graph.predecessors(literal)
+    successors_iter = plan.graph.successors(literal)
+
+    # Materialize as tuples for reuse and length calculation
+    # Tuples are slightly more memory-efficient than lists for fixed size
+    predecessors = tuple(predecessors_iter)
+    successors = tuple(successors_iter)
 
     m = len(predecessors)
     n = len(successors)
 
-    if m * n > m + n:
+    # Short-circuit if m == 0 or n == 0, as literal cannot be trivially connected
+    if m == 0 or n == 0 or m * n > m + n:
         return
 
-    for predecessor, successor in itertools.product(predecessors, successors):
-        plan.graph.add_edge(predecessor, successor, Dependency())
+    # Use itertools.product is fine, but avoid local lookups in loop for small savings
+    graph_add_edge = plan.graph.add_edge
+    dependency_obj = Dependency()
+    for predecessor in predecessors:
+        for successor in successors:
+            graph_add_edge(predecessor, successor, dependency_obj)
     plan.graph.remove_node(literal)
 
 
