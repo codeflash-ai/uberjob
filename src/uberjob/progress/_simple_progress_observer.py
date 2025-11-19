@@ -53,10 +53,10 @@ def get_elapsed_string(elapsed: float) -> str:
     minutes = (elapsed % 3600) // 60
     seconds = elapsed % 60
     if total_hours:
-        return f"{total_hours}h{minutes:02}m{seconds:02}s"
+        return "%dh%02dm%02ds" % (total_hours, minutes, seconds)
     if minutes:
-        return f"{minutes}m{seconds:02}s"
-    return f"{seconds}s"
+        return "%dm%02ds" % (minutes, seconds)
+    return "%ds" % seconds
 
 
 class ScopeState:
