@@ -24,11 +24,14 @@ def identity(x):
 
 def create_retry(attempts, exc_type=Exception):
     """Decorator for retrying a function call"""
+    # Hot path: short-circuit identity to avoid arg validation cost
+    if attempts == 1:
+        return identity
     assert_is_instance(attempts, "attempts", int)
     if attempts < 1:
         raise ValueError("attempts must be positive.")
-    if attempts == 1:
-        return identity
+
+    identity_fn = identity  # local for perf
 
     def inner_retry(f):
         @wraps(f)
