@@ -95,7 +95,7 @@ def repr_helper(instance, *args, defaults=None, **kwargs):
     )
 
 
-@lru_cache(4096)
+@lru_cache(maxsize=4096)
 def fully_qualified_name(x):
     qualname = getattr(x, "__qualname__", None)
     if not qualname:
