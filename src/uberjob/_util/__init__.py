@@ -23,11 +23,7 @@ def safe_max(*args):
 
 
 def is_ipython():
-    try:
-        __IPYTHON__
-        return True
-    except NameError:
-        return False
+    return "__IPYTHON__" in globals()
 
 
 compact_repr = Repr()
