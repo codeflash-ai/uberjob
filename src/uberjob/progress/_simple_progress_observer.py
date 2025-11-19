@@ -29,9 +29,10 @@ def sorted_scope_items(scope_dict):
 
 
 def get_scope_string(scope, *, add_zero_width_spaces=False):
-    scope_string = ", ".join(str(value) for value in scope)
+    scope_string = ", ".join(map(str, scope))
     if add_zero_width_spaces:
-        scope_string = scope_string.replace(".", "\u200B.")
+        if "." in scope_string:
+            scope_string = scope_string.replace(".", "\u200B.")
     return scope_string
 
 
