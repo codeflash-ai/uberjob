@@ -83,7 +83,7 @@ def composite_progress(*members: Progress) -> Progress:
     """
 
     def create_observer():
-        return CompositeProgressObserver(progress.observer() for progress in members)
+        return CompositeProgressObserver(tuple(progress.observer() for progress in members))
 
     return Progress(create_observer)
 
