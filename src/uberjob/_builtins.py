@@ -23,7 +23,7 @@ def gather_list(*args):
 
 
 def gather_tuple(*args):
-    return tuple(args)
+    return args
 
 
 def gather_set(*args):
