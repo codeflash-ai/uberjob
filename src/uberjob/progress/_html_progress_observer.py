@@ -132,8 +132,10 @@ def _get_html_progress_string(scope_state, *, is_failed_bold=False):
     failed = scope_state.failed
     running = scope_state.running
     total = scope_state.total
-    all_done = completed + failed == total
-    started = completed + failed + running > 0
+    completed_failed = completed + failed
+    all_done = completed_failed == total
+    started = completed_failed + running > 0
+
     if all_done or not started:
         progress_string = escape(f"{completed} / {total}")
     else:
@@ -141,7 +143,7 @@ def _get_html_progress_string(scope_state, *, is_failed_bold=False):
     if failed:
         failed_string = (
             f'<span class="badge text-bg-danger '
-            f'{"fw-bolder" if is_failed_bold else ""}">{escape(str(failed))} failed</span>'
+            f'{"fw-bolder" if is_failed_bold else ""}">{failed} failed</span>'
         )
         progress_string = f"{progress_string}, {failed_string}"
     return progress_string
