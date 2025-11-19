@@ -19,7 +19,7 @@ from uberjob._errors import NotTransformedError
 
 
 def gather_list(*args):
-    return list(args)
+    return [*args]
 
 
 def gather_tuple(*args):
