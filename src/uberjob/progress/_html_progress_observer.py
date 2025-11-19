@@ -86,12 +86,19 @@ def _render_body(state, exception_tuples, elapsed):
 
 
 def _get_total_scope_state(scope_states):
+    completed = failed = running = total = weighted_elapsed = 0
+    for s in scope_states:
+        completed += s.completed
+        failed += s.failed
+        running += s.running
+        total += s.total
+        weighted_elapsed += s.weighted_elapsed
     return ScopeState(
-        completed=sum(s.completed for s in scope_states),
-        failed=sum(s.failed for s in scope_states),
-        running=sum(s.running for s in scope_states),
-        total=sum(s.total for s in scope_states),
-        weighted_elapsed=sum(s.weighted_elapsed for s in scope_states),
+        completed=completed,
+        failed=failed,
+        running=running,
+        total=total,
+        weighted_elapsed=weighted_elapsed,
     )
 
 
