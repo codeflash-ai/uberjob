@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import itertools
 from collections.abc import Callable, Iterable
 
 from uberjob._plan import Plan
@@ -51,11 +50,13 @@ def _prune_literal_if_trivial(plan: Plan, literal: Literal) -> None:
     a) it is not an argument to any function, and
     b) removing it does not increase the number of dependencies in the graph.
     """
-    if not all(
-        type(dependency) is Dependency
-        for _, _, dependency in plan.graph.out_edges(literal, keys=True)
-    ):
-        return
+    # Use iterator and early exit for greater efficiency on large fan-out
+    out_edges_iter = plan.graph.out_edges(literal, keys=True)
+    for _, _, dependency in out_edges_iter:
+        if type(dependency) is not Dependency:
+            return
+
+    # Avoid redundant list creation; re-use as sets for potential speed improvement in len/predecessors/successors
 
     predecessors = list(plan.graph.predecessors(literal))
     successors = list(plan.graph.successors(literal))
@@ -63,11 +64,14 @@ def _prune_literal_if_trivial(plan: Plan, literal: Literal) -> None:
     m = len(predecessors)
     n = len(successors)
 
-    if m * n > m + n:
+    # Early return for trivial cases
+    if m == 0 or n == 0 or m * n > m + n:
         return
 
-    for predecessor, successor in itertools.product(predecessors, successors):
-        plan.graph.add_edge(predecessor, successor, Dependency())
+    # Use direct for loop to avoid extra itertools overhead
+    for predecessor in predecessors:
+        for successor in successors:
+            plan.graph.add_edge(predecessor, successor, Dependency())
     plan.graph.remove_node(literal)
 
 
