@@ -51,7 +51,7 @@ def _to_naive_utc_time(value: dt.datetime | None) -> dt.datetime | None:
 
 
 def _get_stale_scope(call: Call, registry: Registry) -> tuple:
-    scope = get_full_call_scope(call)
+    scope = (*call.scope, fully_qualified_name(call.fn))
     value_store = registry.get(call)
     if value_store is None:
         return scope
