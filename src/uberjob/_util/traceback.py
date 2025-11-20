@@ -86,26 +86,28 @@ def get_stack_frame(initial_depth=2):
 
 def render_symbolic_traceback(stack_frame):
     stack_frames = []
+    append_stack_frame = stack_frames.append
+
+    # Pull out repeated string literal for faster comparison
+    ipython_path = "/IPython/core/"
+    TruncatedStackFrame_local = TruncatedStackFrame  # localize for faster lookup
+
+    # Inline format_stack_frame for reduced call overhead
     while stack_frame:
-        if stack_frame is TruncatedStackFrame:
-            stack_frames.append(stack_frame)
+        if stack_frame is TruncatedStackFrame_local:
+            append_stack_frame(stack_frame)
             break
-        if "/IPython/core/" in stack_frame.path:
+        # Avoiding repeated attribute lookup
+        path = stack_frame.path
+        if ipython_path in path:
             break
-        stack_frames.append(stack_frame)
+        append_stack_frame(stack_frame)
         stack_frame = stack_frame.outer
 
-    def format_stack_frame(s):
-        if s is TruncatedStackFrame:
-            return "  ... truncated"
-        return f'  File "{s.path}", line {s.line}, in {s.name}'
-
-    return "\n".join(
-        [
-            "Symbolic traceback (most recent call last):",
-            *(
-                format_stack_frame(stack_frame)
-                for stack_frame in reversed(stack_frames)
-            ),
-        ]
-    )
+    lines = ["Symbolic traceback (most recent call last):"]
+    for s in reversed(stack_frames):
+        if s is TruncatedStackFrame_local:
+            lines.append("  ... truncated")
+        else:
+            lines.append(f'  File "{s.path}", line {s.line}, in {s.name}')
+    return "\n".join(lines)
