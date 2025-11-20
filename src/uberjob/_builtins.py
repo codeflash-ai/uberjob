@@ -23,7 +23,8 @@ def gather_list(*args):
 
 
 def gather_tuple(*args):
-    return tuple(args)
+    # Fast path: direct tuple allocation from varargs avoids extra copying
+    return args
 
 
 def gather_set(*args):
